@@ -31,7 +31,7 @@ sys.path.append(os.path.join(script_dir , '../cocob/optimizer'))
 from cocob.optimizer import COCOB
 
 sys.path.append(os.path.join(script_dir, '../data'))
-import data_preparation
+import vgg_data_preparation as data_preparation
 
 import models.utilities as utilities
 
@@ -162,7 +162,7 @@ class BasicModel(object):
 
       # File containing mean and covariance information for data augmentation
       # and input normalization.
-      'pca_file': os.path.join(root_dir, 'data', 'pca.npz'),
+      #'pca_file': os.path.join(root_dir, 'data', 'pca.npz'),
 
       # Random seed for reproducible results.
       'random_seed': 0,
@@ -223,12 +223,12 @@ class BasicModel(object):
 
     # Load eigen decomposition, mean and covariance value for
     # data normalization and augmentation.
-    pca = np.load(self.config['pca_file'])
-    self.data_evecs = pca['evecs']
-    self.data_evals = pca['evals']
-    self.data_mean = pca['mean']
-    self.data_cov = pca['cov']
-    self.data_var = np.diag(self.data_cov)
+    #pca = np.load(self.config['pca_file'])
+    #self.data_evecs = pca['evecs']
+    #self.data_evals = pca['evals']
+    #self.data_mean = pca['mean']
+    #self.data_cov = pca['cov']
+    #self.data_var = np.diag(self.data_cov)
 
     # Initialize early stopping.
     self.best_global_step = -1
@@ -451,14 +451,16 @@ class BasicModel(object):
     image = tf.image.decode_png(image_buffer, channels=self.config['channels'])
     image = tf.cast(image, tf.float32) / 255.
     
-    angle = tf.random_uniform([], -.1, .1)
-    shear_x = tf.random_uniform([], -.07, .07)
-    shear_y = tf.random_uniform([], -.07, .07)
-    scale = tf.random_uniform([], 1. / 1.05, 1.05)
+    #angle = tf.random_uniform([], -.1, .1)
+    #shear_x = tf.random_uniform([], -.07, .07)
+    #shear_y = tf.random_uniform([], -.07, .07)
+    #scale = tf.random_uniform([], 1. / 1.05, 1.05)
 
-    image, target = tf.py_func(self.preprocessExample, 
-                               [image, coords, angle, shear_x, shear_y, scale],
-                               [tf.float32, tf.float32], stateful=False)
+    image, target = tf.py_func(self.simplepreprocessExample, [image, coords], 
+                                [tf.float32, tf.float32], stateful=False)
+    #image, target = tf.py_func(self.preprocessExample, 
+    #                           [image, coords, angle, shear_x, shear_y, scale],
+    #                           [tf.float32, tf.float32], stateful=False)
 
     # Static shapes are required for the network.
     image_size = self.config['tile_size'] + 2 * self.config['contextual_pad']
@@ -467,6 +469,7 @@ class BasicModel(object):
     target.set_shape([target_size, target_size, self.config['cls_nb']])
 
     # Normalize mean and variance or bring into the [-1, 1] range
+    # TODO 
     if self.config['normalize_inputs']:
       image = (image - self.data_mean) / self.data_var
     else:
@@ -721,7 +724,7 @@ class BasicModel(object):
   def test(self):
     '''Runs the testing loop.'''
     
-    cls_names = list(data_preparation.sld.cls_names[:-1])  # Exclude the UNK token.
+    cls_names = list(data_preparation.cld.cls_names[:-1])  # Exclude the UNK token.
     tid_col_name = self.config['test_id_col_name']
 
     preds_df = pd.DataFrame(columns=[tid_col_name] + cls_names)
@@ -1038,6 +1041,39 @@ class BasicModel(object):
     return np.moveaxis(countMaps, 0, -1).astype(np.float32)
   
 
+  def simplepreprocessExample(self, image, coords):
+    '''This function is meant to be run as a tf.py_func node on a single
+    example.  It returns a randomly perturbed and correctly cropped and padded
+    image and generates one or multiple targets.
+
+      image, target = tf.py_func(preprocessExample, [image, coords, class_ids],
+                                 [tf.float32, tf.float32])
+
+    Args:
+      image: A single training image with value range [0, 1].
+
+    Returns:
+      A tuple containing an image and a table of coordinates.
+    '''
+    #size_in = image.shape[0]
+    #size_out = self.config['tile_size'] + 2 * self.config['contextual_pad']
+    
+    # h = base64.b64encode(struct.pack(">q", hash(image.tostring()))).decode()
+
+    # data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleA' %h)
+    
+ 
+    target = self.generateCountMaps(coords)
+
+    if self.config['draw_border'] and self.config['contextual_pad'] > 0:
+      image = self.draw_border(image, self.config['contextual_pad'], self.config['tile_size'])
+      
+    # data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleB' % h)
+    # t = np.concatenate(np.moveaxis(target, -1, 0))
+    # data_preparation.imshow(t, normalize=True, save=True, title='%s_preprocessExampleC' % h)
+
+    return image.astype(np.float32), target
+  
   def preprocessExample(self, image, coords, angle, shear_x, shear_y, scale):
     '''This function is meant to be run as a tf.py_func node on a single
     example.  It returns a randomly perturbed and correctly cropped and padded

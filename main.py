@@ -17,17 +17,18 @@ from models import make_model
 import os, sys
 import time
 
-from hpsearch import hyperband, randomsearch
+from hpsearch import hyperband
 
 # Make paths absolute and independent from where the python script is called.
 script_dir = os.path.dirname(os.path.realpath(__file__))
 results_dir = os.path.join(script_dir, 'results')
-sys.path.append(os.path.join(script_dir, 'sealionengine'))
+
+sys.path.append(os.path.join(script_dir, 'data/vgg_generate_coords'))
 
 flags = tf.app.flags
 
 # Agent configuration
-flags.DEFINE_string('model_name', 'InceptionModel', \
+flags.DEFINE_string('model_name', 'ContextualInceptionModel', \
                     'Unique name of the model')
 flags.DEFINE_string('config', '{}', \
                     'JSON inputs to fix model parameters, ' \

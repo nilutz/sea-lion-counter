@@ -9,7 +9,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(script_dir, '..', 'tf_models', 'slim'))
 sys.path.append(os.path.join(script_dir, '..', 'data'))
 
-import data_preparation
+import vgg_data_preparation as data_preparation
 
 import tensorflow.contrib.slim as slim
 from nets import inception_v4
