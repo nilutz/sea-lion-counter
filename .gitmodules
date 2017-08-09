@@ -1,6 +1,6 @@
 [submodule "cocob"]
-  path = cocob
-  url = https://github.com/bremen79/cocob
+	path = cocob
+	url = https://github.com/bremen79/cocob.git
 [submodule "tf_models"]
-  path = tf_models
-  url = https://github.com/tensorflow/models.git
+	path = tf_models
+	url = https://github.com/tensorflow/models.git
