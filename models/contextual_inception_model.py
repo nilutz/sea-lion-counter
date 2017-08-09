@@ -2,6 +2,8 @@ import sys
 import os, copy
 import tensorflow as tf
 import numpy as np
+import struct, base64
+
 
 import models.utilities as utilities
 
@@ -371,13 +373,16 @@ class ContextualInceptionModel(BasicModel):
     image = tf.image.decode_png(image_buffer, channels=self.config['channels'])
     image = tf.cast(image, tf.float32) / 255.
     
-    angle = tf.random_uniform([], -.07, .07)
-    shear_x = tf.random_uniform([], -.07, .07)
-    shear_y = tf.random_uniform([], -.07, .07)
-    scale = tf.random_uniform([], 1. / 1.05, 1.05)
+    #angle = tf.random_uniform([], -.07, .07)
+    #shear_x = tf.random_uniform([], -.07, .07)
+    #shear_y = tf.random_uniform([], -.07, .07)
+    #scale = tf.random_uniform([], 1. / 1.05, 1.05)
 
-    image, target, large_target = tf.py_func(self.preprocessExample, 
-                               [image, coords, angle, shear_x, shear_y, scale],
+    #image, target, large_target = tf.py_func(self.preprocessExample, 
+    #                           [image, coords, angle, shear_x, shear_y, scale],
+    #                           [tf.float32] * 3, stateful=False)
+    image, target, large_target = tf.py_func(self.simplepreprocessExample, 
+                               [image, coords],
                                [tf.float32] * 3, stateful=False)
 
     # Static shapes are required for the network.
@@ -423,6 +428,44 @@ class ContextualInceptionModel(BasicModel):
 
     dst[y_min:y_max, x_min:x_max] += 1
 
+
+  def simplepreprocessExample(self, image, coords):
+    '''This function is meant to be run as a tf.py_func node on a single
+    example.  It returns a randomly perturbed and correctly cropped and padded
+    image and generates one or multiple targets.
+
+      image, target = tf.py_func(preprocessExample, [image, coords, class_ids],
+                                 [tf.float32, tf.float32])
+
+    Args:
+      image: A single training image with value range [0, 1].
+
+    Returns:
+      A tuple containing an image and a table of coordinates.
+    '''
+ 
+    size_in = image.shape[0]
+    size_out = self.config['tile_size'] + 2 * self.config['contextual_pad']
+    
+    #h = base64.b64encode(struct.pack(">q", hash(image.tostring()))).decode()
+
+    #data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleA_context' %h)
+    
+    image = self.applyLinearTransformToImage(image, 0, 0, 0, 1., size_out)
+
+    coords[:, 1:] = self.applyLinearTransformToCoords(coords[:, 1:], 0, 0,
+                                                      0, 1., size_in, size_out)
+    target = self.generateCountMaps(coords)
+    large_target = self.generateLargeCountMaps(coords)
+
+    if self.config['draw_border'] and self.config['contextual_pad'] > 0:
+      image = self.draw_border(image, self.config['contextual_pad'], self.config['tile_size'])
+    
+    #data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleB_context' % h)
+    #t = np.concatenate(np.moveaxis(target, -1, 0))
+    #data_preparation.imshow(t, normalize=True, save=True, title='%s_preprocessExampleC_context' % h)
+    
+    return image.astype(np.float32), target, large_target
   
   def preprocessExample(self, image, coords, angle, shear_x, shear_y, scale):
     size_in = image.shape[0]

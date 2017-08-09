@@ -60,15 +60,15 @@ class BasicModel(object):
       # Whether to run the program in debugging mode.
       'debug': True,
       # How often to run the debugging code in the training loop.
-      'debug_output_every': 100,
+      'debug_output_every': 10,
       # Whether to clear existing debug info.
       'clear_debug': True,
       # Whether to clear existing results.
       'clear_results': False,
       # Run profiling metadata.
-      'metadata_every': 3000,
+      'metadata_every': 30,
       # How often to query the summaries.
-      'train_log_every': 10,
+      'train_log_every': 5,
       # Whether to report histograms of the gradients.
       'gradient_summaries': False,
       # Whether to log the placement on the devices in the console.
@@ -87,29 +87,29 @@ class BasicModel(object):
       # Global step at which the model was saved last.
       'last_checkpoint': -1,
       # Number of checkpoints to keep.
-      'max_to_keep': 999,
+      'max_to_keep': 99,
      
       # Whether to recompute the example numbers at start-up.
       'count_examples': False,
       # Number of examples in the training set.
-      'train_examples_nb': 134351,
+      'train_examples_nb': 180,
       # Number of examples in the validation set.
-      'valid_examples_nb': 14936,
+      'valid_examples_nb': 20,
       
       # Whether to save the model upon a keyboard interrupt.
       'save_after_interrupt': True,
       # How often to save.
-      'save_every': 2000,
+      'save_every': 20,
       # How often to validate. 
-      'validate_every': 5000,
+      'validate_every': 10,
       # How many steps to run the training loop for.
-      'max_iter': 0,
+      'max_iter': 100,
       
       # Size of the test tiles (should be large to avoid double-counting at the
       # seams).
-      'test_tile_size': 512,
+      'test_tile_size': 256,
       # Batch size used for testing.
-      'test_batch_size': 16,
+      'test_batch_size': 8,
       # Number of test-time augmentations (4 times rot90).
       'test_augmentation_nb': 1,
       # Number of threads used during testing.
@@ -139,7 +139,7 @@ class BasicModel(object):
       'train_threads_nb': 8,
       # Minimal examples to shuffle at a time in the tf.train.shuffle_batch
       # queue.
-      'min_after_dequeue': 256,
+      'min_after_dequeue': 25,
       # Whether to normalize the inputs with data mean and variance.
       'normalize_inputs': False,
 
@@ -1055,22 +1055,24 @@ class BasicModel(object):
     Returns:
       A tuple containing an image and a table of coordinates.
     '''
-    #size_in = image.shape[0]
-    #size_out = self.config['tile_size'] + 2 * self.config['contextual_pad']
+    size_in = image.shape[0]
+    size_out = self.config['tile_size'] + 2 * self.config['contextual_pad']
     
-    # h = base64.b64encode(struct.pack(">q", hash(image.tostring()))).decode()
+    #h = base64.b64encode(struct.pack(">q", hash(image.tostring()))).decode()
 
-    # data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleA' %h)
+    #data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleA_basic' %h)
     
- 
+    image = self.applyLinearTransformToImage(image, 0, 0, 0, 1., size_out)
+    coords[:, 1:] = self.applyLinearTransformToCoords(coords[:, 1:], 0, 0,
+                                                      0, 1., size_in, size_out)
     target = self.generateCountMaps(coords)
 
     if self.config['draw_border'] and self.config['contextual_pad'] > 0:
       image = self.draw_border(image, self.config['contextual_pad'], self.config['tile_size'])
       
-    # data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleB' % h)
-    # t = np.concatenate(np.moveaxis(target, -1, 0))
-    # data_preparation.imshow(t, normalize=True, save=True, title='%s_preprocessExampleC' % h)
+    #data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleB_basic' % h)
+    #t = np.concatenate(np.moveaxis(target, -1, 0))
+    #data_preparation.imshow(t, normalize=True, save=True, title='%s_preprocessExampleC_basic' % h)
 
     return image.astype(np.float32), target
   

@@ -33,8 +33,9 @@ Visually inspecting the sample can be done by changing `dry_run=False` to `True`
 #### 3. Train the Network
 Download [inception_v4.ckpt](https://github.com/tensorflow/models/tree/master/slim) and unpack the .tar.gz and put in data folder.
 
-Run `main.py' and specify which dataset to use...
+Run `python main.py` and specify which dataset to use...
 
+Run `tensorboard --logdir=results/ContextualInceptionModel_time` where time is a data string, e.g.: 2017-08-09_19-07-24 (a folder which is created upon starting the )
 
 # TODO: 
 - change so that vgg and all the other need just a cmd / so the paths in main.py , basic_model.py , etc. 
