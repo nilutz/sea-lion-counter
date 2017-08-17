@@ -561,7 +561,7 @@ class BasicModel(object):
                 self.coord.request_stop()
               self.best_wait += 1
 
-        if self.config['max_iter'] > 0 and self.global_step >= self.config['max_iter']:
+        if self.config['max_iter'] > 0 and global_step >= self.config['max_iter']:
           print('Global step %i: Maximal number of iterations reached.' % global_step)
           current_score = self.validate() 
           print('Final score: %f' % current_score)
