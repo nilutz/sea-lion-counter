@@ -43,6 +43,10 @@ Run `tensorboard --logdir=results/ContextualInceptionModel_time` where time is a
 - Train with ADAM instead of cocob
 - Check normalize inputs in basic_model
 
+- rewrite test 
+
+- maybe include tf.summary.image
+
 #### 4. Eval the Network
 
 

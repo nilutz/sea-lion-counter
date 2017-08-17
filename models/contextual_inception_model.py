@@ -451,10 +451,10 @@ class ContextualInceptionModel(BasicModel):
 
     #data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleA_context' %h)
     
-    image = self.applyLinearTransformToImage(image, 0, 0, 0, 1., size_out)
+    image = self.applyLinearTransformToImage(image, 0., 0., 0., 1., size_out)
 
-    coords[:, 1:] = self.applyLinearTransformToCoords(coords[:, 1:], 0, 0,
-                                                      0, 1., size_in, size_out)
+    coords[:, 1:] = self.applyLinearTransformToCoords(coords[:, 1:], 0., 0.,
+                                                      0., 1., size_in, size_out)
     target = self.generateCountMaps(coords)
     large_target = self.generateLargeCountMaps(coords)
 

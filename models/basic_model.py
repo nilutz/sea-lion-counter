@@ -90,7 +90,7 @@ class BasicModel(object):
       'max_to_keep': 99,
      
       # Whether to recompute the example numbers at start-up.
-      'count_examples': False,
+      'count_examples': True,
       # Number of examples in the training set.
       'train_examples_nb': 180,
       # Number of examples in the validation set.
@@ -168,7 +168,7 @@ class BasicModel(object):
       'random_seed': 0,
 
       # Whether to use early stopping.
-      'early_stopping': False,
+      'early_stopping': True,
       # The patience is often set somewhere between 10 and 100 (10 or 20 is
       # more common).
       'early_stopping_patience': 15,
@@ -475,6 +475,7 @@ class BasicModel(object):
     else:
       image = image * 2 - 1.
 
+
     if training:
       # Recommendation:
       # Set the capacity of the batch big enough to mix well without exhausting your RAM
@@ -591,7 +592,7 @@ class BasicModel(object):
             self.debug_sequence,
           ])
           print('  Inputs:  max: %f, min: %f' % (np.max(inpts), np.min(inpts)))
-          print('  Ouputs:  max: %f, min: %f' % (np.max(preds), np.min(preds)))
+          print('  Outputs:  max: %f, min: %f' % (np.max(preds), np.min(preds)))
           print('  Targets: max: %f, min: %f' % (np.max(targs), np.min(targs)))
           data_preparation.imshow(inpts[0], save=True, title='debug_%ii_' % global_step,
                                   normalize=True)
@@ -633,6 +634,7 @@ class BasicModel(object):
     
     global_step = self.sess.run(tf.train.get_global_step(self.graph))
     self.sw.add_summary(self.sess.run(self.stats_summaries), global_step)
+
     return self.sess.run(self.score)
 
 
