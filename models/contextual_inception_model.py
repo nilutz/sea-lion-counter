@@ -45,10 +45,10 @@ class ContextualInceptionModel(BasicModel):
       'large_contextual_pad_unpadded': 128,
       'large_contextual_pad': 128 + 66,
       'normalize_inputs': False,
-      'batch_size': 32,
+      'batch_size': 4,
       'hidden_state_size': 96,
       'draw_border': True,
-      'loss_function': 'l2',
+      'loss_function': 'l17',
     }
     config.update(model_config)
     return config
@@ -86,7 +86,7 @@ class ContextualInceptionModel(BasicModel):
 
       def define_loss(preds, target):
         loss = None
-        if self.config['loss_function'] == 'l1':
+        if self.config['loss_function'] == 'l17':
           loss = tf.reduce_mean(tf.abs(target - preds) ** 1.7)
         elif self.config['loss_function'] == 'l2':
           loss = tf.reduce_mean((target - preds) ** 2)
@@ -283,6 +283,8 @@ class ContextualInceptionModel(BasicModel):
       self.valid_op = tf.group(mae_avg.update_op, acc_avg.update_op)
       self.stats_reset_op = tf.group(mae_avg.reset_op, acc_avg.reset_op)
       self.score = mae_avg.value
+      print(self.score)
+
 
       # Debugging
       self.debug_preds = preds

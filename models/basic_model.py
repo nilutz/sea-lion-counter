@@ -107,9 +107,9 @@ class BasicModel(object):
       
       # Size of the test tiles (should be large to avoid double-counting at the
       # seams).
-      'test_tile_size': 256,
+      'test_tile_size': 128,
       # Batch size used for testing.
-      'test_batch_size': 8,
+      'test_batch_size': 4,
       # Number of test-time augmentations (4 times rot90).
       'test_augmentation_nb': 1,
       # Number of threads used during testing.
@@ -134,12 +134,12 @@ class BasicModel(object):
       # Number of GPUs to use.
       'num_gpus': 1,
       # Batch size used for training.
-      'batch_size': 8,
+      'batch_size': 4,
       # Number of threads to run the tf.train.shuffle_batch queue with.
-      'train_threads_nb': 8,
+      'train_threads_nb': 1,
       # Minimal examples to shuffle at a time in the tf.train.shuffle_batch
       # queue.
-      'min_after_dequeue': 25,
+      'min_after_dequeue': 8,
       # Whether to normalize the inputs with data mean and variance.
       'normalize_inputs': False,
 
@@ -155,7 +155,7 @@ class BasicModel(object):
       # Directory that the test data (JPEGs) is read from.
       'test_dir': 'Train',  # Can be Test or Train (for testing the test run).
       # Name of the ID column in the predictions data frame/CSV file.
-      'test_id_col_name': 'train_id',
+      'test_id_col_name': 'tid',
 
       # Ratio by which to split the training data into train/validation sets.
       'train_val_split': 0.1,
@@ -168,7 +168,7 @@ class BasicModel(object):
       'random_seed': 0,
 
       # Whether to use early stopping.
-      'early_stopping': True,
+      'early_stopping': False,
       # The patience is often set somewhere between 10 and 100 (10 or 20 is
       # more common).
       'early_stopping_patience': 15,
@@ -549,7 +549,7 @@ class BasicModel(object):
                 (global_step, current_score))
           
           if self.config['early_stopping']:
-            op = np.less if mode == 'min' else np.greater
+            op = np.less if self.config['early_stopping_mode'] == 'min' else np.greater
             margin = self.config['early_stopping_margin'] if mode == 'min' \
                      else -self.config['early_stopping_margin']
             if op(current_score + margin, self.best_score):
@@ -568,6 +568,7 @@ class BasicModel(object):
           print('Final score: %f' % current_score)
           self.save()
           break
+
 
         # if self.config['debug'] and self.config['debug_output_every'] > 0\
         if self.config['debug_output_every'] > 0\
@@ -634,7 +635,6 @@ class BasicModel(object):
     
     global_step = self.sess.run(tf.train.get_global_step(self.graph))
     self.sw.add_summary(self.sess.run(self.stats_summaries), global_step)
-
     return self.sess.run(self.score)
 
 
@@ -1064,9 +1064,9 @@ class BasicModel(object):
 
     #data_preparation.imshow(image, coords=coords, save=True, title='%s_preprocessExampleA_basic' %h)
     
-    image = self.applyLinearTransformToImage(image, 0, 0, 0, 1., size_out)
-    coords[:, 1:] = self.applyLinearTransformToCoords(coords[:, 1:], 0, 0,
-                                                      0, 1., size_in, size_out)
+    image = self.applyLinearTransformToImage(image, 0., 0., 0., 1., size_out)
+    coords[:, 1:] = self.applyLinearTransformToCoords(coords[:, 1:], 0., 0.,
+                                                      0., 1., size_in, size_out)
     target = self.generateCountMaps(coords)
 
     if self.config['draw_border'] and self.config['contextual_pad'] > 0:

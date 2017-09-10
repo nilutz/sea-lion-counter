@@ -20,14 +20,14 @@ sys.path.append(os.path.join(script_dir, '..'))
 
 from vgg_generate_coords import CellData
 
-dry_run = False
+dry_run = True
 cls_nb = 1
 
-tile_size = 256
-tile_margin = 64
+tile_size = 128
+tile_margin = 32
 coords_margin = 128
 scale_factor = 1.0
-num_processes = 2
+num_processes = 1
 
 background_rate = 0.02
 scale_factor = 1.0
@@ -181,7 +181,8 @@ def getTransformedTileAndCoords(img, ref_y, ref_x, coords=None, \
     coords = np.round(coords)
     
     if dry_run:
-      imshow(tile, coords=coords, save=True, title='Transformed')
+      title = 'Transformed_'+str(tile_size)+'x'+str(tile_size)+'_'
+      imshow(tile, coords=coords, save=True, title=title)
 
   if dry_run:
     tile_data = b''
@@ -342,7 +343,7 @@ def create_set(train_ids, split_nb, suffix, shall_clear_files=False):
   for tid in train_ids:
     tile_counter_, background_tile_counter_, class_counts_, examples_, dist_list_  = processExample(tid)
 
-    tile_counter += tile_counter
+    tile_counter += tile_counter_
     background_tile_counter += background_tile_counter_
 
     for i in range(len(class_counts)):

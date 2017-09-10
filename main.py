@@ -41,7 +41,7 @@ flags.DEFINE_string('results_dir', '', \
                     'Directory to store/log the model ' \
                     '(if it exist, the model will be loaded from it)')
 flags.DEFINE_string('task', 'train', 'The task to run: train, test or search')
-flags.DEFINE_boolean('debug', False, 'Debug mode')
+flags.DEFINE_boolean('debug', True, 'Debug mode')
 
 def main(_):
   config = flags.FLAGS.__flags.copy()
